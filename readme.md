@@ -6,6 +6,16 @@ Golang视频,笔记,学习路线等资料[链接](https://www.aliyundrive.com/s/
 在go1.5之前需要使用GOPATH进行工作环境配置,最新已经不需要使用了,新的HelloWorld视频可以看[链接](https://www.bilibili.com/video/BV1bV41177KD)
 
 go1.18版本添加了go work工作区模式 
+# Go语言的特性
+* 自动垃圾回收
+* 更丰富的内置类型
+* 函数多返回值
+* 错误处理
+* 匿名函数和闭包
+* 类型和接口
+* 并发编程
+* 反射
+* 语言交互性
 # 一些链接
 
 * [中文标准库1](https://studygolang.com/pkgdoc)
@@ -14,5 +24,6 @@ go1.18版本添加了go work工作区模式
 * [Golang官网2](https://golang.google.cn/)  
 
 # 学习顺序 
-## [Hello World](./helloworld)
-## [gin_demo](./gin_demo)
+## [输出Hello World](./helloworld)
+## [简单的gin_demo](./gin_demo)
+## [go_module依赖管理工具](./go_module)
