@@ -15,3 +15,5 @@ data
 core
 output*
 myout.txt
+/.fleet
+.fleet
