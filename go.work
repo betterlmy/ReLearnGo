@@ -3,4 +3,5 @@ go 1.19
 use (
 	./gin_demo
 	./helloworld
+	go_module
 )
