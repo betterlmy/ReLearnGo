@@ -6,6 +6,8 @@ import (
 )
 
 func Hello() {
-	fmt.Println("Hello World")
+	var str string = "helloworld"
+	fmt.Print(str)
+	fmt.Printf("%s", str)
 	hello2.Hello2()
 }

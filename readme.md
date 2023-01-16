@@ -1,12 +1,15 @@
 # 前言
+
 编写时间:2023-01-11  
 
-根据[李文周老师(老男孩)课程](https://www.liwenzhou.com/)进行学习.  
+根据[李文周老师课程](https://www.liwenzhou.com/)进行学习.  
 Golang视频,笔记,学习路线等资料[链接](https://www.aliyundrive.com/s/yUJBxdZxFk8) 提取码:88dk  
 在go1.5之前需要使用GOPATH进行工作环境配置,最新已经不需要使用了,新的HelloWorld视频可以看[链接](https://www.bilibili.com/video/BV1bV41177KD)
 
-go1.18版本添加了go work工作区模式 
-# Go语言的特性
+go1.18版本添加了go work工作区模式
+
+## Go语言的特性
+
 * 自动垃圾回收
 * 更丰富的内置类型
 * 函数多返回值
@@ -16,14 +19,20 @@ go1.18版本添加了go work工作区模式
 * 并发编程
 * 反射
 * 语言交互性
-# 一些链接
+
+## 一些链接
 
 * [中文标准库1](https://studygolang.com/pkgdoc)
 * [中文标准库2](https://github.com/astaxie/gopkg)
 * [Golang官网1](https://go.dev/)
 * [Golang官网2](https://golang.google.cn/)  
 
-# 学习顺序 
-## [输出Hello World](./helloworld)
-## [简单的gin_demo](./gin_demo)
-## [go_module依赖管理工具](./go_module)
+## 学习顺序
+
+### [输出Hello World](./helloworld)
+
+### [简单的gin_demo](./gin_demo)
+
+### [go_module依赖管理工具](./go_module)
+
+### [基础语法](./grammer)
