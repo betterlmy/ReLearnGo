@@ -1,10 +1,13 @@
 package io
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"reflect"
 )
+
+var c string = "global 变量"
 
 func ReadFileContent(filename string) {
 	// ioutil.ReadFile已在1.16版本被去除,使用os包进行ReadFile操作
@@ -30,4 +33,16 @@ func ReadFileContent(filename string) {
 	}
 	fmt.Println("程序继续执行")
 
+}
+
+func PrintFile(filename string) {
+	// 读取文件内容
+	contents, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	scanner := bufio.NewScanner(contents)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
 }

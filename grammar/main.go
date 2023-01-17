@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strconv"
 )
 
 // variable 学习变量类型
@@ -116,6 +117,37 @@ func grade(score int) string {
 	}
 	return "得分为" + g
 }
+
+// increase 学习for循环
+func increase() int {
+	var sum int
+	for i := 0; i < 10; i++ {
+		fmt.Println(i)
+		sum += i
+	}
+	return sum
+}
+
+// convert2Bin 十进制转二进制,学习for循环
+func convert2Bin(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	result := ""
+	for ; n > 0; n /= 2 {
+		x := n % 2
+		// 从 int 到 string 的转换将整数值解释为代码点
+		result = strconv.Itoa(x) + result
+	}
+	return result
+}
+
+// forever 无限循环
+func forever() {
+	for {
+		fmt.Println("abc")
+	}
+}
 func main() {
 	fmt.Println("Hello Go Grammar!")
 	//variable()
@@ -127,5 +159,9 @@ func main() {
 	//}
 	//io.ReadFileContent("abc.txt")
 	//fmt.Println(eval(1, 1, "+"))
-	fmt.Println(grade(0))
+	//fmt.Println(grade(0))
+	//fmt.Println(increase())
+	//fmt.Println(convert2Bin(12344))
+	//io.PrintFile("abc.txt")
+	forever()
 }

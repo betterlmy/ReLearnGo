@@ -194,3 +194,37 @@ panic(fmt.Sprintf("Wrong score: %d", score))
 return "得分为" + g
 }
 ```
+
+## for循环
+
+### 初始化,条件,后置语句三要素都有
+
+```go
+var sum int
+for i := 0; i < 10; i++ {
+fmt.Println(i)
+sum += i
+}
+```
+### 单条件循环(类while)
+
+```go
+func PrintFile(filename string) {
+	// 读取文件内容
+	contents, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	scanner := bufio.NewScanner(contents)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+}
+```
+
+### while True循环
+```go
+for {
+fmt.Println("1")
+}
+```
