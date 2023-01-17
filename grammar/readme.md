@@ -25,7 +25,7 @@ complex real imag
 panic recover
 ```
 
-## 变量
+## 变量与常量
 
 [variable()函数](./main.go)
 ![](assets/OzmOsy.png)
@@ -77,9 +77,120 @@ c = int(math.Sqrt(4))
 ```
 
 ### 输出变量类型
-    
+
 ```go
 fmt.Printf("%T", c)
 fmt.Println(reflect.TypeOf(c))
 ```
+
+### 常量的定义
+
+```go
+const (
+filename = "abc.txt"
+a, b = 3, 4
+)
+var c int
+c = int(math.Sqrt(a*a + b*b))
+fmt.Println(filename, c)
+```
+
+const 数值可以作为各种类型使用,例如上述定义ab为int类型,但是在Sqrt函数中,要求参数为float64类型,仍然可以使用.
+
+### 使用常量定义枚举类型
+
+```go
+//普通枚举类型
+const(
+cpp = iota
+java
+python
+golang
+js
+)
+
+//自增枚举类型
+const (
+b = 1 << (10 * iota)
+kb
+mb
+gb
+tb
+pb
+)
+
+```
+
+### 回顾
+
+* 变量类型写在变量名之后
+* 编译器可推测变量类型
+* 有char，只有rune
+* 原生支持复数类型
+
+## 条件语句
+
+### if语句
+
+```go
+func bounded(v int) int {
+if v >= 100 {
+return 100
+} else if v < 0 {
+return 0
+} else {
+return v
+}
+}
+```
+
+使用[io操作](io/io.go)进行条件语句示例.  
+if语句可以直接赋值,且同时变量作用域只限制在这个if语句内.
+
+### switch语句
+
+switch会自动break,除非使用fallthrough强制执行后面的case代码.
+
+```go
+
+// eval switch有表达式的情况
+func eval(a, b int, op string) float64 {
+var result float64
+switch op {
+case "+":
+result = float64(a + b)
+case "-":
+result = float64(a - b)
+case "*":
+result = float64(a * b)
+case "/":
+if b == 0 {
+panic("除数不能为0")
+}
+result = float64(a) / float64(b)
+default:
+panic("不支持的操作子:" + op)
+}
+return result
+}
+
+// grade switch没有表达式的情况,需要添加判断语句
+func grade(score int) string {
+g := ""
+switch {
+case score < 0 || score > 100:
+panic(fmt.Sprintf("Wrong score: %d", score))
+case score < 60:
+g = "F"
+case score < 80:
+g = "C"
+case score < 90:
+g = "B"
+case score <= 100:
+g = "A"
+default:
+panic(fmt.Sprintf("Wrong score: %d", score))
+}
+return "得分为" + g
+}
 ```
