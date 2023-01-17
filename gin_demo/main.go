@@ -17,5 +17,9 @@ func start() {
 	r.GET("/", func(ctx *x.Context) {
 		ctx.String(200, str)
 	})
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		return
+	}
+	fmt.Println()
 }
