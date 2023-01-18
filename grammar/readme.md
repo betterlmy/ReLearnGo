@@ -206,25 +206,66 @@ fmt.Println(i)
 sum += i
 }
 ```
+
 ### 单条件循环(类while)
 
 ```go
 func PrintFile(filename string) {
-	// 读取文件内容
-	contents, err := os.Open(filename)
-	if err != nil {
-		panic(err)
-	}
-	scanner := bufio.NewScanner(contents)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
+// 读取文件内容
+contents, err := os.Open(filename)
+if err != nil {
+panic(err)
+}
+scanner := bufio.NewScanner(contents)
+for scanner.Scan() {
+fmt.Println(scanner.Text())
+}
 }
 ```
 
 ### while True循环
+
 ```go
 for {
 fmt.Println("1")
+}
+```
+
+## 函数
+
+* 函数没有默认参数
+* 函数可以返回多个值
+* 函数返回多个值时,可以起名字,对调用者而言没有区别
+
+```go
+func div(a, b int) (q, r int) {
+q = a / b
+r = a % b
+return
+}
+```
+
+* 函数可以作为变量的值
+
+```go
+func apply(op func (float64, float64) float64, a, b float64) float64 {
+p := reflect.ValueOf(op).Pointer() //返回指向函数的指针
+opName := runtime.FuncForPC(p).Name() //返回函数名
+fmt.Println("执行函数:", opName, "with args", a, " ", b)
+return op(a, b)
+}
+//在使用时可以直接使用 
+apply(func (a, b float64) float64 {return a+b}, 1, 2) 达到使用匿名函数的效果
+```
+
+* 可变参数的设置
+
+```go
+func sum(num ...int) int {
+s := 0
+for _, j := range num {
+s += j
+}
+return s
 }
 ```

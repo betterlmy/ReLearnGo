@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"runtime"
 	"strconv"
 )
 
@@ -77,25 +78,25 @@ func bounded(v int) int {
 }
 
 // eval 用于计算加减乘除,学习switch语句
-func eval(a, b int, op string) float64 {
+func eval(a, b int, op string) (float64, error) {
 	var result float64
+	var err error = nil
 	switch op {
 	case "+":
 		result = float64(a + b)
-		fallthrough
 	case "-":
 		result = float64(a - b)
 	case "*":
 		result = float64(a * b)
 	case "/":
 		if b == 0 {
-			panic("除数不能为0")
+			err = fmt.Errorf("除数不能为0")
 		}
 		result = float64(a) / float64(b)
 	default:
-		panic("不支持的操作子:" + op)
+		err = fmt.Errorf("不支持的操作子:%s", op)
 	}
-	return result
+	return result, err
 }
 
 // grade 用于分数评估,学习switch中添加比较语句
@@ -142,12 +143,37 @@ func convert2Bin(n int) string {
 	return result
 }
 
-// forever 无限循环
+// forever 无限循环,while True语句
 func forever() {
 	for {
 		fmt.Println("abc")
 	}
 }
+
+// div 带余数的除法,学习函数中的双返回值,给予命名可以在调用时候返回该命名,方便使用
+func div(a, b int) (q, r int) {
+	q = a / b
+	r = a % b
+	return
+}
+
+// apply 将函数作为参数使用
+func apply(op func(float64, float64) float64, a, b float64) float64 {
+	p := reflect.ValueOf(op).Pointer()    //返回指向函数的指针
+	opName := runtime.FuncForPC(p).Name() //返回函数名
+	fmt.Println("执行函数:", opName, "with args", a, " ", b)
+	return op(a, b)
+}
+
+// sum 求和,学习可变参数
+func sum(num ...int) int {
+	s := 0
+	for _, j := range num {
+		s += j
+	}
+	return s
+}
+
 func main() {
 	fmt.Println("Hello Go Grammar!")
 	//variable()
@@ -163,5 +189,14 @@ func main() {
 	//fmt.Println(increase())
 	//fmt.Println(convert2Bin(12344))
 	//io.PrintFile("abc.txt")
-	forever()
+	//forever()
+	//fmt.Println(div(5, 3))
+
+	//f, err := eval(5, 1, "/")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(f)
+	//fmt.Println(apply(math.Pow, 3, 4))
+	fmt.Println(sum(1, 2, 3))
 }
