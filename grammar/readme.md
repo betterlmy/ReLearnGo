@@ -269,3 +269,26 @@ s += j
 return s
 }
 ```
+
+### 指针
+* 指针不能做运算
+* 指针的值为nil时,不能进行解引用操作
+* Go语言的参数传递为引用传递
+```go
+func passByValue(a int) {
+	a += 1
+}
+
+func passByPointer(a *int) {
+	*a += 1
+}
+
+func pointerTypeCheck() {
+	a, b := 3, 3
+	passByValue(a)
+	passByPointer(&b)
+	fmt.Println("值传递", a)
+	fmt.Println("指针传递", b)
+
+}
+```

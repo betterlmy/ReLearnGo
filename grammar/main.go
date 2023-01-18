@@ -198,5 +198,7 @@ func main() {
 	//}
 	//fmt.Println(f)
 	//fmt.Println(apply(math.Pow, 3, 4))
-	fmt.Println(sum(1, 2, 3))
+	//fmt.Println(sum(1, 2, 3))
+	//pointer()
+	pointerTypeCheck()
 }
