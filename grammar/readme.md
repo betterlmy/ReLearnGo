@@ -292,3 +292,25 @@ func pointerTypeCheck() {
 
 }
 ```
+
+## 数组
+### 数组的定义方法
+```go
+	var arr1 [5]int         // 默认为0
+	arr2 := [3]int{1, 2, 3} //需要赋初值
+	arr3 := [...]int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+```
+
+### 数组是值类型
+```go
+func printArray(arr [5]int) {
+	fmt.Println("要求数组长度必须是5,否则无法传入")
+	for i := range arr {
+		fmt.Println(i)
+	}
+}
+    arr1, arr2, arr3 := arrays()
+    printArray(arr1)
+    printArray(arr2) // 无法使用 会报错,因为数组是值类型,传递的是值的拷贝
+    printArray(arr3)
+```
