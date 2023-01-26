@@ -23,5 +23,4 @@ func pointerTypeCheck() {
 	passByPointer(&b)
 	fmt.Println("值传递", a)
 	fmt.Println("指针传递", b)
-
 }
