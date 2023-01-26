@@ -82,6 +82,8 @@ c = int(math.Sqrt(4))
 fmt.Printf("%T", c)
 fmt.Println(reflect.TypeOf(c))
 ```
+### fmt.Printf占位符
+!!!
 
 ### 常量的定义
 
@@ -201,9 +203,9 @@ return "得分为" + g
 
 ```go
 var sum int
-for i := 0; i < 10; i++ {
-fmt.Println(i)
-sum += i
+  for i := 0; i < 10; i++ {
+  fmt.Println(i)
+  sum += i
 }
 ```
 
@@ -211,15 +213,15 @@ sum += i
 
 ```go
 func PrintFile(filename string) {
-// 读取文件内容
-contents, err := os.Open(filename)
-if err != nil {
-panic(err)
-}
-scanner := bufio.NewScanner(contents)
-for scanner.Scan() {
-fmt.Println(scanner.Text())
-}
+  // 读取文件内容
+  contents, err := os.Open(filename)
+  if err != nil {
+  	panic(err)
+  }
+  scanner := bufio.NewScanner(contents)
+  for scanner.Scan() {
+  	fmt.Println(scanner.Text())
+  }
 }
 ```
 
@@ -227,7 +229,7 @@ fmt.Println(scanner.Text())
 
 ```go
 for {
-fmt.Println("1")
+	fmt.Println("1")
 }
 ```
 
@@ -393,4 +395,3 @@ fmt.Println("通过println方法打印Slice的ptr,可以验证以上说法,两�
 ### 删除元素
 go语言没有内置的删除元素的方法,需要自己实现
 
-## fmt.Printf占位符
