@@ -199,10 +199,17 @@ func main() {
 	//fmt.Println(f)
 	//fmt.Println(apply(math.Pow, 3, 4))
 	//fmt.Println(sum(1, 2, 3))
+
 	//pointer()
-	pointerTypeCheck()
+	//pointerTypeCheck()
 	//arr1, arr2, arr3 := arrays()
 	//printArray(arr1)
 	//printArray(arr2) // 会报错,因为数组是值类型,传递的是值的拷贝
 	//printArray(arr3)
+
+	//sliceTest()
+	//initSlice()
+	//extendSlice()
+	//deleteElement()
+	deleteHeadAndTail()
 }
