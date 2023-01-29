@@ -7,7 +7,7 @@ func lengthOfLongestSubstring(s string) int {
 	lastOccurred := make(map[rune]int)
 	start := 0
 	maxLength := 1
-	for i, ch := range s {
+	for i, ch := range []rune(s) {
 		if lastI, ok := lastOccurred[ch]; ok && lastI >= start {
 			// 检测到重复之后,即发现该子串已达最长,计算此次重复最长的子串距离
 			start = lastI + 1 // 从下一个开始进行新的子串检测
