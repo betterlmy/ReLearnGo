@@ -215,10 +215,10 @@ func main() {
 
 	//map
 	//mapInit()
-	//fmt.Println("标准答案为2,程序答案为", lengthOfLongestSubstring2("cdd"))
-	//fmt.Println("标准答案为1,程序答案为", lengthOfLongestSubstring2("aa"))
-	//fmt.Println("标准答案为2,程序答案为", lengthOfLongestSubstring2("au"))
-	//fmt.Println("标准答案为1,程序答案为", lengthOfLongestSubstring2("  "))
-	//fmt.Println("标准答案为0,程序答案为", lengthOfLongestSubstring2(""))
+	//fmt.Println("标准答案为2,程序答案为", lengthOfLongestSubstring("cdd"))
+	//fmt.Println("标准答案为1,程序答案为", lengthOfLongestSubstring("aa"))
+	//fmt.Println("标准答案为2,程序答案为", lengthOfLongestSubstring("au"))
+	//fmt.Println("标准答案为1,程序答案为", lengthOfLongestSubstring("  "))
+	//fmt.Println("标准答案为0,程序答案为", lengthOfLongestSubstring(""))
 
 }

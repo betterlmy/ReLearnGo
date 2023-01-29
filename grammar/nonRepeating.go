@@ -1,6 +1,6 @@
 package main
 
-func lengthOfLongestSubstring2(s string) int {
+func lengthOfLongestSubstring(s string) int {
 	// 检测两个相同字母之间的最长距离
 	// abca -> 3
 	// asdddasdfgha -> 6
