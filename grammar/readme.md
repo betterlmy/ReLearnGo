@@ -450,27 +450,71 @@ delete(m, "qq")
 ```
 
 ### key的要求
+
 * key必须是可以比较的类型,比如int,string等,不包括slice,map,function
 * 自建类型不包含上述字段时,也可作为key
 
 ## rune
+
+rune 即 int32的别名
+
 ```go
 func runeInit() {
-	s := "Yes我爱你!" // 一个中文占4个字符长度,即32位,在go中 rune=int32,所以说string就是由rune组成的
-	fmt.Println("直接输出len(s),长度为:13", len(s))
-	for _, v := range s {
-		fmt.Print(string(v) + " ")
+s := "Yes我爱你!" // 一个中文占4个字符长度,即32位,在go中 rune=int32,所以说string就是由rune组成的
+fmt.Println("直接输出len(s),长度为:13", len(s))
+for _, v := range s {
+fmt.Print(string(v) + " ")
 
-		fmt.Print("十进制:" + strconv.Itoa(int(v)))
-		fmt.Printf(" %T ", v)
-		fmt.Printf("16进制:%X \n", v)
-	}
-	fmt.Println("使用for循环,循环次数为:7")
-	// 为了获取rune的长度,需要使用utf-8库
-	fmt.Println("使用utf-8库,获取的长度", utf8.RuneCountInString(s))
-	fmt.Println('a', "a") //单引号为utf-8的rune类型,双引号为string类型
-	a := 'a'
-	fmt.Println(reflect.TypeOf(a))
-	fmt.Printf("%c", a) // 使用string()方法或者%c将单个rune转换为string
+fmt.Print("十进制:" + strconv.Itoa(int(v)))
+fmt.Printf(" %T ", v)
+fmt.Printf("16进制:%X \n", v)
+}
+fmt.Println("使用for循环,循环次数为:7")
+// 为了获取rune的长度,需要使用utf-8库
+fmt.Println("使用utf-8库,获取的长度", utf8.RuneCountInString(s))
+fmt.Println('a', "a") //单引号为utf-8的rune类型,双引号为string类型
+a := 'a'
+fmt.Println(reflect.TypeOf(a))
+fmt.Printf("%c", a) // 使用string()方法或者%c将单个rune转换为string
 }
 ```
+
+## struct
+
+go语言仅支持封装,不支持继承和多态,使用接口完成多态  
+go语言没有class,只有struct
+
+### struct定义
+
+无论是地址还是结构,一律使用.进行访问
+
+```go
+func structInit() {
+var root1 TreeNode
+fmt.Println(root1)
+
+root2 := TreeNode{Left: &root1, Value: 1}
+root2.Right = &TreeNode{nil, nil, 5}
+fmt.Println(root2)
+fmt.Println(root2.Right.Value)
+}
+```
+
+### 限定接受体的方法(class的方法)
+
+```go
+// 限定接受体的方法
+func (node *TreeNode) print() {
+if node.Value != 0 {
+fmt.Println("未赋初值")
+}
+fmt.Println(node.Value)
+}
+
+```
+
+注意点:
+
+* 使用指针做为方法的接收者时才可以改变结构体的内容
+* nil指针也可以调用方法
+* 一致性原则,一个结构体定义的方法最好从指针接收者或者值接收者选择一个,方便进行编译器的优化
