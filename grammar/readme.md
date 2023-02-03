@@ -533,7 +533,6 @@ fmt.Println(node.Value)
 ### 扩充系统类型或他人的类型(继承)
 
 * 定义别名
-
 ```go
 type Stack []int
 ```
@@ -543,9 +542,29 @@ type Stack []int
 ```go
 type MyTreeNode struct {
 // 通过组合的方式进行继承
-node *TreeNode
+    node *TreeNode
+	len int
 }
 ```
 
-* 使用内嵌的方式扩展
+* 使用内嵌的方式扩展(Embedding)
+语法糖
+```go
+type MyTree struct {
+    // 通过内嵌的方式进行继承
+    *Tree //区别于组合的方式,删掉了实例化的变量
+}
+```
+使用内嵌的方式可以实现函数的重载,新的struct可以使用原来的方法(添加一个调用),并且可以使用自己的方法
+```go
+func (node *Tree) Print(){
+	print("Tree的方法")
+}
+func (node MyTree) Print(){
+    print("MyTree的方法")
+}
 
+node := MyTree{&Tree{nil,nil,1}}
+node.Print() // MyTree的方法
+node.Tree.Print() // Tree的方法
+```

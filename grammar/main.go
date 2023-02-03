@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	Struct "grammar/struct"
+	Struct "grammar/struct/tree"
 	"math"
 	"reflect"
 	"runtime"
@@ -224,21 +224,32 @@ func main() {
 	//runeInit()
 
 	//struct
-	//structInit()
-	q := Struct.Queue{Data: []int{1, 2, 3}}
-	q.Push(5)
-	q.Push(4)
-	q.Print()
-	for q.IsEmpty() == false {
-		fmt.Println(q.Pop())
-	}
+	//Struct.Init()
 
-	s := Struct.Stack{Data: []int{1, 2, 3}}
-	s.Push(5)
-	s.Push(4)
-	s.Print()
-	for s.IsEmpty() == false {
-		fmt.Println(s.Pop())
-	}
+	// 继承
+	//q := Struct.Queue{Data: []int{1, 2, 3}}
+	//q.Push(5)
+	//q.Push(4)
+	//q.Print()
+	//for q.IsEmpty() == false {
+	//	fmt.Println(q.Pop())
+	//}
+	//
+	//s := Struct.Stack{Data: []int{1, 2, 3}}
+	//s.Push(5)
+	//s.Push(4)
+	//s.Print()
+	//for s.IsEmpty() == false {
+	//	fmt.Println(s.Pop())
+	//}
 
+	myNode := MyTree{Tree: &Struct.Tree{Value: 3, Left: nil, Right: nil}}
+	myNode.Tree.Print()
+	myNode.Print()
+	myNode.SetValue(5)
+	myNode.Print()
+	fmt.Println()
+	myNode.Left = &Struct.Tree{Value: 4, Left: nil, Right: nil}
+	myNode.Right = &Struct.Tree{Value: 6, Left: &Struct.Tree{Value: 7, Left: nil, Right: nil}, Right: nil}
+	myNode.TraversePre()
 }
