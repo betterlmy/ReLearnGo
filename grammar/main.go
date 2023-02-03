@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	Struct "grammar/struct"
 	"math"
 	"reflect"
 	"runtime"
@@ -223,5 +224,21 @@ func main() {
 	//runeInit()
 
 	//struct
-	structInit()
+	//structInit()
+	q := Struct.Queue{Data: []int{1, 2, 3}}
+	q.Push(5)
+	q.Push(4)
+	q.Print()
+	for q.IsEmpty() == false {
+		fmt.Println(q.Pop())
+	}
+
+	s := Struct.Stack{Data: []int{1, 2, 3}}
+	s.Push(5)
+	s.Push(4)
+	s.Print()
+	for s.IsEmpty() == false {
+		fmt.Println(s.Pop())
+	}
+
 }

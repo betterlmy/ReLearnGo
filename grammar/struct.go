@@ -10,6 +10,11 @@ type TreeNode struct {
 	Value       int
 }
 
+type MyTreeNode struct {
+	// 通过组合的方式进行继承
+	node *TreeNode
+}
+
 // 限定接受体的方法
 func (node *TreeNode) print() {
 	fmt.Print(strconv.Itoa(node.Value) + " ")
