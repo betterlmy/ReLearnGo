@@ -56,5 +56,5 @@ go1.18版本添加了go work工作区模式
 * [Golang官网1](https://go.dev/)
 * [Golang官网2](https://golang.google.cn/)  
 * [Github资源](https://github.com/avelino/awesome-go)
-
+* [中文书籍](./books)
 
