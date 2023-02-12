@@ -28,8 +28,6 @@ panic recover
 ## 变量与常量
 
 [variable()函数](./main.go)
-![](assets/OzmOsy.png)
-![](assets/zuoIVz.png)
 
 ### 变量声明
 
@@ -85,7 +83,23 @@ fmt.Println(reflect.TypeOf(c))
 
 ### fmt.Printf占位符
 
-!!!
+[占位符](./printf/printf.go)表格
+
+| 占位符 |          说明          |
+|:---:|:--------------------:|
+| %v  |       按值的本来值输出       |
+| %+v | 在%v基础上，对结构体字段名和值进行展开 |
+| %v  |     输出Go语言语法格式的值     |
+| %T  |   输出Go语言语法格式的类型和值    |
+| %%  |        输出%本体         |
+| %b  |      整型以二进制方式显示      |
+| %0  |      整型以八进制方式显示      |
+| %d  |      整型以十进制方式显示      |
+| %x  |     整型以十六进制方式显示      |
+| %X  |   整型以十六进制、字母大写方式显示   |
+| %U  |       Unicode字       |
+| %f  |         浮点数          |
+| %p  |     指针，以十六进制方式显示     |
 
 ### 常量的定义
 
@@ -153,7 +167,7 @@ if语句可以直接赋值,且同时变量作用域只限制在这个if语句内
 
 ### switch语句
 
-switch会自动break,除非使用fallthrough强制执行后面的case代码.
+switch会自动break,除非使用fallthrough`强制执行`(无论是否满足条件)后面的case代码.
 
 ```go
 
@@ -201,6 +215,8 @@ return "得分为" + g
 
 ## for循环
 
+Go中没有while循环
+
 ### 初始化,条件,后置语句三要素都有
 
 ```go
@@ -234,7 +250,8 @@ for {
 fmt.Println("1")
 }
 ```
-
+### 练习
+[斐波那契数列](./for/fibonacci.go)
 ## 函数
 
 * 函数没有默认参数
@@ -533,6 +550,7 @@ fmt.Println(node.Value)
 ### 扩充系统类型或他人的类型(继承)
 
 * 定义别名
+
 ```go
 type Stack []int
 ```
@@ -542,29 +560,32 @@ type Stack []int
 ```go
 type MyTreeNode struct {
 // 通过组合的方式进行继承
-    node *TreeNode
-	len int
+node *TreeNode
+len int
 }
 ```
 
 * 使用内嵌的方式扩展(Embedding)
-语法糖
+  语法糖
+
 ```go
 type MyTree struct {
-    // 通过内嵌的方式进行继承
-    *Tree //区别于组合的方式,删掉了实例化的变量
+// 通过内嵌的方式进行继承
+*Tree //区别于组合的方式,删掉了实例化的变量
 }
 ```
+
 使用内嵌的方式可以实现函数的重载,新的struct可以使用原来的方法(添加一个调用),并且可以使用自己的方法
+
 ```go
 func (node *Tree) Print(){
-	print("Tree的方法")
+print("Tree的方法")
 }
 func (node MyTree) Print(){
-    print("MyTree的方法")
+print("MyTree的方法")
 }
 
-node := MyTree{&Tree{nil,nil,1}}
+node := MyTree{&Tree{nil, nil, 1}}
 node.Print() // MyTree的方法
 node.Tree.Print() // Tree的方法
 ```
