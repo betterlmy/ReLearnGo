@@ -4,13 +4,13 @@
 
 Go语言中共有`25`个关键字，如下所示：
 
-```go
-break       default     func interface select
-case defer go map         struct
-chan        else goto package switch
-const fallthrough if range type
-continue    for import return var
-```
+
+`break`   `default`   `func`    `interface`   `select`
+`case`    `defer`     `go`      `map`         `struct`
+`chan`    `else`      `goto`    `package`     `switch`
+`const`   `fallthrough` `if`    `range`        `type`
+`continue`  `for`      `import` `return`       `var`
+
 
 此外,包含`36`个预定义标识符,如下所示:
 
@@ -250,8 +250,11 @@ for {
 fmt.Println("1")
 }
 ```
+
 ### 练习
+
 [斐波那契数列](./for/fibonacci.go)
+
 ## 函数
 
 * 函数没有默认参数

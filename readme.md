@@ -36,7 +36,7 @@ go1.18版本添加了go work工作区模式
     * 使用通道(channel)来实现协程见的同步和通信
 * 内置[映射(map)](basic_grammar/map.go)和[切片(slice)](basic_grammar/slice.go)类型
 * 支持多态(polymorphism)
-* 使用[接口(interface)](./advanced/interface)来实现装盒(value boxing)和反射(reflection)
+* 使用[接口(interface)](advanced/interface)来实现装盒(value boxing)和反射(reflection)
 * 支持[指针](basic_grammar/pointer.go)
 * 支持函数闭包(closure) 
 * 支持方法
