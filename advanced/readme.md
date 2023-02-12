@@ -8,6 +8,23 @@ go语言高级编程
 
 Go语言中没有异常机制,但是有一个error接口,可以通过error接口来处理错误.
 
+#### 自定义error
+除了使用errors包中的New方法来创建自定义异常,还可以通过接口来创建.  
+Go语言中的error类型实际上是一个接口,只要实现了Error() string方法即可,源代码如下:
+```go
+type error interface{
+	Error() string
+}
+```
+自定义一个类型,实现返回string类型的Error()方法即可,代码如下:
+```go
+type ErrNegSqrt float64
+func (e ErrNegSqrt) Error() string{
+	return fmt.Sprintf("不能对负数`%v`进行开根号",e)
+}
+```
+[完整调用代码](error/error/error.go)
+
 ### [panic宕机](error/panic)
 
 一般而言,只有当程序发生不可逆的错误时,才需要使用`panic`方法来触发宕机.  
@@ -18,7 +35,7 @@ panic的源代码如下,可以看到panic方法接收一个interface{}类型的�
 func panic(v interface{})
 ```
 
-调用panic的情形:
+#### 调用panic的情形:
 
 * 程序处于失控状态且无法恢复,继续执行会影响其他程序时
 * 发生不可预知的错误时

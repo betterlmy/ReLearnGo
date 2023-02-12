@@ -5,6 +5,7 @@
 接口是Go语言中一种类型，表示`一组方法签名（方法名、参数、返回值列表）的集合`。
 接口类型不包含具体地实现，但是任何类型（包括结构体、函数、别名类型等）如果实现了接口中的所有方法，就可以被认为是该接口的实例。
 `接口由使用者进行定义`,即接口由测试等人进行定义使用
+
 ### 示例代码
 
 ```go
@@ -19,7 +20,7 @@ Get(string) error // 这个接口包含着Get这个方法,同时限定了方法�
 type Retriever1 struct {
 }
 func (Retriever1) Get(url string) error {
-return nil
+    return nil
 }
 
 type Retriever2 struct{}

@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-func main() {
+func main1() {
 	err := errors.New("这是一个新的错误")
 	var err2 error
 	fmt.Println(err)  // 这是一个新的错误
