@@ -9,20 +9,25 @@ go语言高级编程
 Go语言中没有异常机制,但是有一个error接口,可以通过error接口来处理错误.
 
 #### 自定义error
+
 除了使用errors包中的New方法来创建自定义异常,还可以通过接口来创建.  
 Go语言中的error类型实际上是一个接口,只要实现了Error() string方法即可,源代码如下:
+
 ```go
 type error interface{
-	Error() string
+Error() string
 }
 ```
+
 自定义一个类型,实现返回string类型的Error()方法即可,代码如下:
+
 ```go
 type ErrNegSqrt float64
 func (e ErrNegSqrt) Error() string{
-	return fmt.Sprintf("不能对负数`%v`进行开根号",e)
+return fmt.Sprintf("不能对负数`%v`进行开根号", e)
 }
 ```
+
 [完整调用代码](error/error/error.go)
 
 ### [panic宕机](error/panic)
@@ -104,3 +109,17 @@ func main() {
 
 实际应用中,我们可以通过写入安全函数的方式,即使发生panic 主程序仍然能够继续正常运行,[示例代码](error/recover/recover.go)
 
+## 文件处理
+
+Go语言对I/O操作主要提供了下列几个官方标准库:
+
+| 包名            | 作用                               |
+|---------------|----------------------------------|
+| os            | 提供了平台无关的接口,用于操作系统底层的文件,目录,进程,信号等 |
+| io            | 为io原语(i/o primitives)提供基本的接口     |
+| fmt           | 格式化io,实现对控制台的输入和输出               |
+| bufio         | 实现带缓冲io                          |
+| ~~io/ioutil~  | 自Go1.16之后已被删除                    |
+| path/filepath | 实现了跨平台的文件路径操作,提供了对文件路径的处理方法      |
+
+具体包内接口的用法可以参考[中文文档](https://studygolang.com/pkgdoc),[官方文档](https://pkg.go.dev/std)
