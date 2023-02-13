@@ -123,3 +123,418 @@ Go语言对I/O操作主要提供了下列几个官方标准库:
 | path/filepath | 实现了跨平台的文件路径操作,提供了对文件路径的处理方法      |
 
 具体包内接口的用法可以参考[中文文档](https://studygolang.com/pkgdoc),[官方文档](https://pkg.go.dev/std)
+
+### 目录操作
+
+想到读取一个目录的内容,需要用到os库(或io/ioutil包)的ReadDir方法,该方法返回一个os.DirEntry,该类型包含了文件的基本信息,如文件名,文件大小,文件权限等
+
+```go
+func ReadDir(dirname string) ([]os.DirEntry, error)
+```
+
+[完整代码](io/dir/readDir.go)
+
+#### 获取目录下所有的文件
+
+手动遍历代码
+
+```go
+func ListDir(dir string) error {
+files, err := os.ReadDir(dir)
+if err != nil {
+return err
+}
+
+for _, filename := range files {
+if filename.IsDir() {
+ListDir(dir + filename.Name() + "/")
+}
+fmt.Printf("文件名:%s%s\n", dir, filename.Name())
+}
+
+return nil
+}
+
+```
+
+使用Walk函数
+
+```go
+func WalkDir(dir string) {
+err := filepath.Walk(dir, func (path string, info os.FileInfo, err error) error {
+if info == nil {
+return err
+}
+if info.IsDir() {
+return nil
+}
+println(path)
+return nil
+})
+if err != nil {
+fmt.Printf("filepath.Walk() returned %v\n", err)
+}
+}
+```
+
+#### 创建目录
+
+[完整代码](io/dir/mkdir.go)  
+使用os库中的`Mkdir`接口
+
+```go
+func Mkdir(name string, perm FileMode) error{
+
+}
+```
+
+`Mkdir`接口使用指定的名称和权限创建一个目录,错误情形:
+
+* 要新建的目录已经存在
+* 父目录存在
+* 子目录是多个需要新建的目录
+* 权限不足
+
+如果需要一次性新建一个多级目录,需要使用`MkdirAll`接口
+
+#### 删除目录
+
+删除目录主要使用到`os.Remove(path string)`方法  
+如果目录非空,则会报错,如果需要删除非空目录,需要使用`os.RemoveAll(path string)`方法  
+递归删除目录下所有的空文件夹,[完整代码](io/dir/rmdir.go)
+
+### 文件操作
+
+#### 文件权限
+
+在linux中,文件的权限分为读r,写w和执行x.具体数值与作用见下表
+
+| 权限  | 数值  | 作用                         |
+|-----|-----|----------------------------|
+| r   | 4   | 可以读取文件内容;浏览当前目录            |
+| w   | 2   | 可以写入文件内容;删除或者移动当前目录内的目录与文件 |
+| x   | 1   | 可以执行文件或进入目录                |
+
+#### 文件的创建与打开
+
+文件的创建与打开使用`os.OpenFile()`方法,该方法的定义如下:
+
+```go
+func OpenFile(name string, flag int, perm FileMode)(file *file, err error)
+}
+```
+
+参数flag用于指定文件的访问模式,常见的值已经已经在os库中定义为了常量:
+
+```go
+const (
+O_RDONLY int = syscall.O_RDONLY // 只读模式打开文件
+O_WRONLY int = syscall.O_WRONLY // 只写模式打开文件
+O_RDWR   int = syscall.O_RDWR   // 读写模式打开文件
+O_APPEND int = syscall.O_APPEND // 写操作时将数据附加到文件尾部
+O_CREATE int = syscall.O_CREAT // 如果不存在将创建一个新文件
+O_EXCL   int = syscall.O_EXCL // 和O_CREATE配合使用,文件必须不存在
+O_SYNC   int = syscall.O_SYNC // 打开文件用于同步I/O
+O_TRUNC  int = syscall.O_TRUNC // 如果可能,打开时清空文件
+)
+```
+
+其中`O_CREATE`和`O_EXCL`常常一起使用,用于确保文件的创建是安全的,`O_EXCL`要求文件必须不存在,否则会报错,`O_CREATE`
+则是如果文件不存在,则创建文件,存在的话则不进行任何操作.  
+`O_RDONLY`,`O_RDONLY`,`O_RDWR`应该只指定其中一个,剩下的通过或操作符`|`进行组合,如`O_CREATE|O_APPEND`
+表示创建文件并且写入时将数据附加到文件尾部.  
+该函数内部会给flags加上`syscall.O_CLOEXEC`，在fork子进程时会关闭通过OpenFile打开的文 件，即子进程不会重用该文件描述符。
+
+参数`perm`指定了文件的模式和权限位,类型是`os.FileMode`,且同样在os中定义为常量
+
+```go
+const(
+ModeDir FileMode = 1 << (32 - 1 - iota) // 目录
+ModeAppend                              // a:只能写入,且写入时将数据附加到文件尾部
+ModeExclusive                           // 文件用于同步I/O
+ModeTemporary                           // 文件是临时文件
+ModeSymlink   // 文件是符号链接
+ModeDevice    // 文件是设备文件,一般是指系统的外部设备
+ModeNamedPipe // 文件是命名管道
+ModeSocket    // 文件是Unix域socket
+ModeSetuid    // 执行此文件时具有文件所有者的用户ID
+ModeSetgid     // 执行此文件时具有文件所有者的组ID
+ModeCharDevice // 文件是字符设备,一般指系统的终端设备
+ModeSticky     // 只有拥有者才能删除此文件
+ModeIrregular  // 文件是不规则的,即既不是目录,也不是常规文件
+
+ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice // 文件类型掩码
+ModePerm FileMode = 0777 // Unix权限位掩码
+)
+```
+
+`OpenFile`是一个更加底层的打开函数,更多人使用`Open`或者`Create`代替本函数.
+
+```go
+func Open(name string)(*File, error){
+return OpenFile(name, O_RDONLY, 0)
+}
+
+func Create(name string)(*File, error){
+return OpenFile(name, O_RDWR|O_CREATE|O_TRUNC, 0666
+```
+
+#### 文件读取
+
+`File`类型的`Read`方法用于读取文件内容,其定义如下:
+
+```go
+func (f *File) Read(b []byte) (n int, err error)
+```
+
+Read方法从文件中每次读取len(b)
+字节数据并写入到byte数组中,他返回读取的字节数或额错误信息,如果读取到文件末尾,则返回0和`io.EOF`错误.  
+[示例代码](io/file/readFile.go)
+
+当遇到特别大的文件时,并且只需要读取文件最后部分的内容时,可以使用`Seek`方法将文件指针移动到文件末尾,然后再使用`Read`
+方法读取文件内容.或者使用ReadAt方法,该方法可以指定读取的位置和长度.
+
+```go
+func (f *File) ReadAt(b []byte, off int64) (n int, err error)
+```
+
+ReadAt方法从文件的指定位置读取指定长度的内容,如果读取到文件末尾,则返回0和`io.EOF`错误.
+[示例代码](io/file/readFile.go)
+
+#### 文件写入
+
+`File`类型的`Write`方法用于向文件中写入内容,其定义如下:
+
+```go
+func (f *File) Write(b []byte) (n int, err error)
+// 参数b为要写入的内容
+// 返回值n为写入的字节数
+```
+
+#### 文件删除
+
+`os`包中的`Remove`函数用于删除文件,其定义如下:
+
+```go
+func Remove(name string) error
+```
+
+`Remove`函数只能删除文件,不能删除目录,如果要删除目录,需要使用`RemoveAll`函数,其定义如下:
+
+```go
+func RemoveAll(path string) error
+```
+
+### Json处理
+
+JSON(JavaScript Object Notation)是一种轻量级的数据交换格式,Json最初属于JS的一部分吗,后来由于良好的可读性和跨语言的特性,现已独立于语言,被广泛使用.
+[Json官网](http://json.org/)
+Json中的键都是字符串的形式,值可以取任意类型.他有以下三种结构:
+
+```json
+//值为字符串或数组类型
+{
+  "name": "Jhon",
+  "age": 20
+}
+
+//JSON数组
+[
+  {
+    "name": "Jhon",
+    "age": 20
+  },
+  {
+    "name": "Dan",
+    "age": 21
+  }
+]
+
+//值为对象类型
+{
+  "name": "Jhon",
+  "age": 20,
+  "address": {
+    "city": "Beijing",
+    "street": "Xidan"
+  }
+}
+```
+
+Go语言提供了`encoding/json`包用于处理Json数据.
+
+#### Json编码
+
+json包中的`Marshal`函数用于将Go语言中的数据类型转换为Json格式的数据,其定义如下:
+
+```go
+func Marshal(v interface{}) ([]byte, error)
+```
+
+为了让输出的Json字符串更加直观,可以使用`MarshalIndent`函数,其定义如下:
+
+```go
+func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error)
+```
+
+demo
+
+```json
+func map2Json() {
+  m: =
+  make(map[
+  string
+]interface{}, 6)
+m["name"] = "小王子"
+m["age"] = 18
+m["sex"] = true
+m["hobby"] = [...]string{
+"篮球", "足球", "乒乓球"
+}
+
+result, _: = json.Marshal(m)
+resultFormatted, _: = json.MarshalIndent(m, "", "	")
+fmt.Println("result=", string(result))
+fmt.Println("resultFormatted=", string(resultFormatted))
+}
+/*
+result= {"age":18,"hobby":["篮球","足球","乒乓球"],"name":"小王子","sex":true}
+resultFormatted= {
+        "age": 18,
+        "hobby": [
+                "篮球",
+                "足球",
+                "乒乓球"
+        ],
+        "name": "小王子",
+        "sex": true
+}
+*/
+```
+
+实际应用中,我们一般会使用struct字段来定义需要转换的对象,然后再将struct转换为Json格式的数据.
+
+```go
+type Person struct {
+Name   string   `json:"姓名"`
+Age    int      `json:"-"`
+Gender bool     `json:"性别"`
+Class  int      `json:"班级,omitempty"`
+Hobby  []string `json:"爱好"`
+}
+
+func main() {
+p1 := Person{
+Name:   "小明",
+Age:    18,
+Gender: true,
+Class:  1,
+Hobby:  []string{"唱", "跳", "rap", "篮球"},
+}
+result, _ := json.MarshalIndent(p1, "", "  ")
+fmt.Println(string(result))
+}
+```
+
+在定义struct时,可以在字段后添加标签来控制编解码的过程,标签的格式为`key:"value"`,多个标签之间使用空格分隔.
+
+- `json:"字段名"`:用于指定字段对应的Json键名,如果不指定,则默认使用字段名作为Json键名.
+- `json:"-"`:用于指定字段不参与编码.
+- `json:"字段名,omitempty"`:用于指定字段在编码时忽略空值,即空值不会被编码到Json中,且字段名可以省略.
+
+#### Json解码
+
+json包中的Unmarshal方法用于将json格式数据解码为Go语言中的数据类型,其定义如下:
+
+```go
+func Unmarshal(data []byte, v interface{}) error
+```
+
+Unmarshal函数将解码后的结果存入v指向的值中.如果v是一个指针,则Unmarshal会将解码后的结果存入v指向的值中,如果v是一个值,则Unmarshal会将解码后的结果存入v的副本中.
+
+函数会将数据解码为如下类型并写入接口:
+
+| Go数据类型                 | Json类型   |
+|------------------------|----------|
+| bool                   | booleans |
+| float64                | numbers  |
+| int64                  | numbers  |
+| string                 | strings  |
+| []interface{}          | arrays   |
+| map[string]interface{} | JSON 对象  |
+| nil                    | null     |
+
+要将Json数据解码为struct,需要注意以下几点:
+
+- Json数据中的键名必须与struct中的字段名完全匹配,包括大小写.
+- Json数据中的键名必须是struct中字段名的子集,否则会报错.
+
+使用map并通过类型断言来进行json解析代码
+```go
+jsonStr :=
+		`{
+		"name": "小张",
+		"age": 30,
+		"hobby": ["唱","跳","rap","篮球"],
+		"pet":{"petName":"小花","petAge":3}
+	}`
+	// jsonStr是string类型
+	m := make(map[string]interface{}, 8)
+	err := json.Unmarshal([]byte(jsonStr), &m)
+	if err != nil {
+		fmt.Println("err=", err)
+		return
+	}
+	fmt.Println(m)
+	for key, value := range m {
+		switch data := value.(type) {
+		case string:
+			fmt.Printf("map[%s]的类型为string,值为%s\n", key, data)
+		case float64:
+			fmt.Printf("map[%s]的类型为float64,值为%f\n", key, data)
+		case []interface{}:
+			fmt.Printf("map[%s]的类型为[]interface{},值为%v\n", key, data)
+		case map[string]interface{}:
+			fmt.Printf("map[%s]的类型为json,值为%v\n", key, data)
+		case bool:
+			fmt.Printf("map[%s]的类型为bool,值为%v\n", key, data)
+		}
+	}
+```
+
+使用struct进行json解码
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Person struct {
+	Name  string                 `json:"name"`
+	Age   int                    `json:"age"`
+	Hobby []string               `json:"hobby"`
+	Pet   map[string]interface{} `json:"pet"`
+}
+
+func (p Person) String() string {
+	//return fmt.Sprintf("Person's attribute\nname:%v\nage:%v\nhobby:%v\npet:%v", p.Name, p.Age, p.Hobby, p.Pet)
+	return fmt.Sprintf("Person's attribute\nname:%v\nage:%v\nhobby:%v\npet's name:%v\npet's age:%v", p.Name, p.Age, p.Hobby, p.Pet["petName"], p.Pet["petAge"])
+}
+
+func main() {
+	jsonStr :=
+		`{
+		"name": "小张",
+		"age": 30,
+		"hobby": ["唱","跳","rap","篮球"],
+		"pet":{"petName":"小花","petAge":3}
+	}`
+	var p Person
+	_ = json.Unmarshal([]byte(jsonStr), &p)
+	fmt.Println(p)
+}
+
+```
+Github开源了一个比标准库解析速度快近10倍的[fastjson库](https://github.com/valyala/fastjson),可以使用这个库来解析json数据.
