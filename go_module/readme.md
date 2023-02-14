@@ -34,11 +34,11 @@ GOVENDOR的缺点是,需要手动管理依赖的第三方包,并且需要手动�
 
 ### GO111MODULE
 
-要启用`go module`支持首先要设置环境变量`GO111MODULE`，通过它可以开启或关闭模块支持，它有三个可选值：off、on、auto，默认值是auto。
+要启用`go module`支持首先要设置环境变量`GO111MODULE`,通过它可以开启或关闭模块支持,它有三个可选值：off、on、auto,默认值是auto。
 
-* GO111MODULE=off禁用模块支持，编译时会从GOPATH和vendor文件夹中查找包。
-* GO111MODULE=on启用模块支持，编译时会忽略GOPATH和vendor文件夹，只根据 go.mod下载依赖。
-* GO111MODULE=auto，当项目在$GOPATH/src外且项目根目录有go.mod文件时，开启模块支持。
+* GO111MODULE=off禁用模块支持,编译时会从GOPATH和vendor文件夹中查找包。
+* GO111MODULE=on启用模块支持,编译时会忽略GOPATH和vendor文件夹,只根据 go.mod下载依赖。
+* GO111MODULE=auto,当项目在$GOPATH/src外且项目根目录有go.mod文件时,开启模块支持。
 
 需要通过命令行进行修改GO111MODULE的值,
 
@@ -46,7 +46,7 @@ GOVENDOR的缺点是,需要手动管理依赖的第三方包,并且需要手动�
 go env -w GO111MODULE=auto 
 ```
 
-简单来说，设置GO111MODULE=on之后就可以使用`go module`了，以后就没有必要在GOPATH中创建项目了，并且还能够很好的管理项目依赖的第三方包信息。
+简单来说,设置GO111MODULE=on之后就可以使用`go module`了,以后就没有必要在GOPATH中创建项目了,并且还能够很好的管理项目依赖的第三方包信息。
 
 使用 go module 管理依赖后会在项目根目录下生成两个文件go.mod和go.sum。
 
@@ -61,7 +61,7 @@ Go mod 提供处理依赖的操作方法,包括下述命令
 | edit     | edit go.mod from tools or scripts          | 编辑go.mod文件              |
 | graph    | print module requirement graph             | 打印模块依赖图                 |
 | init     | initialize new module in current directory | 初始化当前文件夹, 创建go.mod文件    |
-| tidy     | add missing and remove unused modules      | 增加缺少的module，删除无用的module |
+| tidy     | add missing and remove unused modules      | 增加缺少的module,删除无用的module |
 | vendor   | make vendored copy of dependencies         | 将依赖复制到vendor下           |
 | verify   | verify dependencies have expected content  | 校验依赖                    |
 | why      | explain why packages or modules are needed | 解释为什么需要依赖               |
@@ -104,16 +104,16 @@ github.com/go -playground/locales v0.14.0 // indirect
 
 #### 对现存项目
 
-如果需要对一个已经存在的项目启用`go module`，可以按照以下步骤操作：
+如果需要对一个已经存在的项目启用`go module`,可以按照以下步骤操作：
 
-1. 在项目目录下执行go mod init，生成一个go.mod文件。
-2. 执行go get，查找并记录当前项目的依赖，同时生成一个go.sum记录每个依赖库的版本和哈希值。
+1. 在项目目录下执行go mod init,生成一个go.mod文件。
+2. 执行go get,查找并记录当前项目的依赖,同时生成一个go.sum记录每个依赖库的版本和哈希值。
 
 #### 对新项目
 
-对于一个新创建的项目，我们可以在项目文件夹下按照以下步骤操作：
+对于一个新创建的项目,我们可以在项目文件夹下按照以下步骤操作：
 
-1. 执行go mod init 项目名命令，在当前项目文件夹下创建一个go.mod文件。
+1. 执行go mod init 项目名命令,在当前项目文件夹下创建一个go.mod文件。
 2. 手动编辑go.mod中的require依赖项或执行go get自动发现、维护依赖。
 
 ## [本地包调用](./main.go)

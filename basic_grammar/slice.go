@@ -25,7 +25,7 @@ func sliceTest() {
 	fmt.Println("arr[:5]", s2)
 	fmt.Println("arr[3:]", s3)
 	fmt.Println("arr[:]", s4)
-	fmt.Println("可以发现，切片是引用类型，修改原数组，切片也会跟着变化")
+	fmt.Println("可以发现,切片是引用类型,修改原数组,切片也会跟着变化")
 }
 
 // updateSlice 切片引用的证明
