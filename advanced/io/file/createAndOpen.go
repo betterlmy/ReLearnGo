@@ -10,7 +10,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println(file)
+		fmt.Println(file.Name())
 		file.Close()
 	}
 }
