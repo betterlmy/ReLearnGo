@@ -7,27 +7,34 @@ import (
 	"fmt"
 )
 
-type Stack interface {
-	push(int) error
-	pop() (int error)
-}
+//type IntStack interface {
+//	Push(int) error
+//	Pop() (int error)
+//}
 
 type intStack struct {
-	data []int
+	data []int64
 	Len  int
 	Cap  int
 }
 
-func (stack *intStack) Push(input int) error {
+func (stack *intStack) Push(input int64) error {
 	if stack.Len == stack.Cap {
+		// 如果支持动态栈 删掉这个代码即可
 		return errors.New("栈满")
 	}
+
 	stack.data = append(stack.data, input)
+
+	if stack.Len == stack.Cap {
+		stack.Cap = cap(stack.data) // 如果支持动态栈
+		fmt.Println("栈已扩容")
+	}
 	stack.Len += 1
 	fmt.Printf("push元素%d成功,当前栈的容量%d,当前长度%d\n", input, stack.Cap, stack.Len)
 	return nil
 }
-func (stack *intStack) Pop() (int, error) {
+func (stack *intStack) Pop() (int64, error) {
 	if stack.Len == 0 {
 		return -1, errors.New("栈空")
 	}
@@ -47,13 +54,10 @@ func NewIntStack(cap int) (*intStack, error) {
 	fmt.Printf("新建stack成功,cap=%d\n", cap)
 
 	return &intStack{
-		data: make([]int, 0, cap),
+		data: make([]int64, 0, cap),
 		Len:  0,
 		Cap:  cap,
 	}, nil
-}
-func Test() {
-	fmt.Println("1")
 }
 
 func main() {
