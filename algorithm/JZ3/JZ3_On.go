@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// hash法
 func duplicate1(numbers []int) int {
 	// write code here
 	exist := make([]bool, len(numbers))
