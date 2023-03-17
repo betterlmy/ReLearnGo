@@ -840,3 +840,128 @@ CSP中channel是一类对象,他不关注发送消息的实体,而关注发送�
 
 基于CSP模型,意味着`显式锁`都是可以避免的,例如资源竞争(多个进程同时获取文件资源并进行修改时会存在上锁解锁的问题),死锁等问题. Go语言通过安全的通道进行数据发送和接收以实现同步.
 
+
+
+## 泛型
+
+先来看一下`泛型函数`(区别于泛型类型)的定义
+```go
+func GenericFoo[P aConstraint, Q anotherConstraint](x,y P, z Q){
+	// do something
+}
+```
+在这里 P和Q是类型参数的名字,相比于普通的函数声明,多了一个类型参数列表
+可以将P和Q理解为类型占位符,在调用函数时,会将P和Q替换为具体的类型
+
+### 约束 Constraint
+
+约束规定了一个类型参数必须满足的条件要求,如果某个类型满足了约束,那么就可以作为类型参数传入函数中,如果不满足,则会报错.
+
+在Go中,使用interface来定义约束,因此从1.18版本之后,Go的接口类型也进行了扩展,我们既可以声明接口的方法集合,也可以声明用作类型实参的类型列表
+
+有下面的示例
+```go
+package main
+
+type C1 interface {
+	~int | ~int32 // 期望类型为int和int32
+	M1()
+}
+
+type T1 struct {
+	// struct T实现了接口C1所要求的方法
+}
+
+func (T1) M1() {
+
+}
+
+type T2 int // T2也满足C1所要求的方法
+
+func (T2) M1() {
+
+}
+
+type T3 string
+
+func foo[P C1](t P) {
+
+}
+
+func main() {
+	var t1 T1
+	var t2 T2
+	var t3 T3
+	foo(t1) // T1类型未实现约束 'C1'，因为类型未包括在类型集('~int', '~int32')中
+	foo(t2)
+	foo(t3) // T3类型未实现 'C1'，因为缺少某些方法: M1()
+}
+
+```
+上面展示的方法虽然可以正常对T2类型的变量传入函数中,但是一般情况下,我们需要区分开接口与约束(虽然他们都是以接口的形式进行表达)
+
+### 具化 Instantiation
+
+在声明了泛型函数之后,接下来就要调用泛型函数来实现具体的业务逻辑了.
+有下面的代码
+```go
+func Sort[Elem interface{ Less(y Elem) bool }](list []Elem) {
+}
+
+type book struct{}
+func (x book) Less(y book) bool {
+        return true
+}
+
+func main() {
+    var bookshelf []book
+    Sort[book](bookshelf) // 泛型函数调用
+}
+```
+book这个结构体已经实现了Less方法,因此可以作为类型参数传入Sort函数中.
+
+在main函数中,调用Sort方法共分为两个阶段:
+1. 具化
+具化过程,Sort发现传入的方法是一个book类型的对象,检查这个对象是否满足了constraint,如果满足了约束条件,则将该对象替换掉函数中的形参.
+
+随后将Sort具化为一个新的函数,新函数要求传入的对象类型为book.
+
+2. 调用
+调用过程,将bookshelf作为参数传入新函数中,新函数会对bookshelf进行排序.
+
+### 泛型类
+除了函数可以携带类型参数变身为"泛型函数"之外,类型也可以拥有类型参数而化身为"泛型类型"
+
+例如,我们可以定义一个向量泛型类型
+```go
+type Vector[T any] []T
+```
+这是一个带有类型参数的类型定义，类型参数位于类型名的后面，同样用方括号括起。
+
+在类型定义体中可以引用类型参数列表中的参数名（比如 T）。 类型参数同样拥有自己的约束，如上面代码中的 any。
+
+在 Go 1.18 中，any 是 interface{}的别名，也是一个预定义标识符，使用 any 作为类型参数的约束，代表没有任何约束。
+
+在泛型类型中,我们也要遵循,先具化 再使用的顺序,比如下面的例子
+```go
+package main
+
+import "fmt"
+
+type Vector[T any] []T
+
+func (v Vector[T]) Dump() {
+	fmt.Printf("%v\n", v)
+}
+
+func main() {
+	x := Vector[string]{"你好", "Hello"}
+	y := Vector[int]{1, 2, 3}
+
+	x.Dump()
+	y.Dump()
+
+}
+```
+
+从这段代码中,可以看出 泛型类型的具化过程和泛型函数的具化过程是一样的.  都会具化出一个具体的类型,然后再调用这个具体的类型.
