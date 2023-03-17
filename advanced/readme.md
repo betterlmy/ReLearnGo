@@ -840,6 +840,144 @@ CSP中channel是一类对象,他不关注发送消息的实体,而关注发送�
 
 基于CSP模型,意味着`显式锁`都是可以避免的,例如资源竞争(多个进程同时获取文件资源并进行修改时会存在上锁解锁的问题),死锁等问题. Go语言通过安全的通道进行数据发送和接收以实现同步.
 
+### channel
+
+channel是Go语言中的一种类型,(与函数相似 都是Go语言中的一等公民)它是一种引用类型,类似于数组和切片,但是channel的元素类型只能是一种,并且是在声明时确定的,channel是线程安全的,可以在多个goroutine中同时使用.
+
+#### channel的创建,使用与关闭
+
+**创建有缓冲和无缓冲的channel**
+```go
+	var ch chan int // 声明一个元素为int类型的channel类型的变量ch
+	// 如果channel类型变量在声明的时候没有被赋予初值,那么他默认值为nil
+	// 并且和其他复合数据类型支持使用复合类型字面值做为变量初始值不一样,channel 只能使用make方法进行预定义
+	ch1 := make(chan int)     // 无缓冲channel
+	ch2 := make(chan int, 10) // 带缓冲长度为10的channel类型
+```
+
+**发送与接收**
+Go提供了<-操作符用于对channel类型的变量进行发送与接受的操作
+```go
+    ch <- 1 // 发送数据
+    <-ch    // 接收数据
+```
+
+channel是用于goroutine之间通信的,所以绝大多数对channel的读写都分别放在了不同的goroutine种了
+由于无缓冲channel的运行时层
+
+**无缓冲channel的发送与接收**
+
+由于channel没有缓冲区,所以发送和接收操作必须同时进行,否则会造成死锁.也就是说 对同一个无缓冲的channel,只有对他进行接收操作的goroutine和对他进行发送操作的goroutine都存在的情况下,通信才得以进行.
+
+否则单方面的操作会让goroutine陷入挂起状态.
+
+无缓冲channel兼具通信和同步的特性,在并发程序中应用颇为广泛:
+1.用作信号传递
+```go
+package main
+type signal struct{}
+
+func worker() {
+    println("worker is working...")
+    time.Sleep(1 * time.Second)
+}
+
+func spawn(f func()) <-chan signal {
+    c := make(chan signal)
+    go func() {
+        println("worker start to work...")
+        f()
+        c <- signal{}
+    }()
+    return c
+}
+
+func main() {
+    println("start a worker...")
+    c := spawn(worker)
+    <-c
+    fmt.Println("worker work done!")
+}
+```
+在上面的例子中,只有worker开始工作之后,main函数才会输出worker work done,可以将channel当做信号量来使用.
+2.用于替代锁机制
+[示例代码](concurrency/channel/无缓冲替代锁)
+
+这种并发设计逻辑更符合 Go 语言所倡导的`不要通过共享内存来通信，而是通过通信来共享内存`的原则。
+
+**有缓冲channel的发送与接收**
+
+有缓冲区的channel在发送和接收操作时,在缓冲区满了的情况下,发送操作会阻塞,在缓冲区为空的情况下,接收操作会阻塞.
+
+
+
+**只发送和只接受类型的channel**
+```go
+
+// produce 生产者 只发送数据
+func produce(ch chan<- int) {
+for i := 0; i < 10; i++ {
+ch <- i
+time.Sleep(time.Second)
+}
+close(ch)
+}
+
+// consume 消费者 只接受数据
+func consume(ch <-chan int) {
+for n := range ch {
+fmt.Println("接收到的数据", n)
+}
+}
+
+// sendOnlyAndReceiveOnly 只发送和只接受
+func sendOnlyAndReceiveOnly() {
+
+ch3 := make(chan int, 5)
+var wg sync.WaitGroup
+wg.Add(2)
+go func() {
+produce(ch3)
+fmt.Println("wg done1")
+wg.Done()
+}()
+
+go func() {
+consume(ch3)
+fmt.Println("wg done2")
+wg.Done()
+}()
+
+fmt.Println("wg waiting")
+wg.Wait()
+fmt.Println("程序运行结束")
+
+}
+```
+在channel中,发送端负责关闭channel,接收端负责判断channel是否关闭
+#### select
+
+当涉及同时对多个channel进行操作的时候,我们会结合Go为CSP并发模型提供的另外一个原语select一起使用.
+
+通过select,我们可以同时在多个channel上进行发送和接收操作
+
+```go
+
+select {
+case x := <-ch1:     // 从channel ch1接收数据
+  ... ...
+
+case y, ok := <-ch2: // 从channel ch2接收数据，并根据ok值判断ch2是否已经关闭
+  ... ...
+
+case ch3 <- z:       // 将z值发送到channel ch3中:
+  ... ...
+
+default:             // 当上面case中的channel通信均无法实施时，执行该默认分支
+}
+```
+当 select 语句中没有 default 分支，而且所有 case 中的 channel 操作都阻塞了的时候，整个 select 语句都将被阻塞，直到某一个 case 上的 channel 变成可发送，或者某个 case 上的 channel 变成可接收，select 语句才可以继续进行下去。
+
 
 
 ## 泛型

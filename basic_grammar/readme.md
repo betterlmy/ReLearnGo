@@ -11,6 +11,10 @@ Go语言中共有`25`个关键字,如下所示：
 `const`   `fallthrough` `if`    `range`        `type`
 `continue`  `for`      `import` `return`       `var`
 
+defer用在:
+1. 关闭一些连接 如mysql redis的connect
+2. 释放锁
+3. panic出现的时候,释放资源
 
 此外,包含`36`个预定义标识符,如下所示:
 
