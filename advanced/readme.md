@@ -774,7 +774,7 @@ func main() {
 
 Github开源了一个比标准库解析速度快近10倍的[fastjson库](https://github.com/valyala/fastjson),可以使用这个库来解析json数据.
 
-## 协程与通道
+## 并发
 
 随着社会需求的发展,计算机的性能也在不断提升,单核CPU的性能也在不断提升,但是单核CPU的性能提升的速度已经远远跟不上社会需求的发展,所以我们需要使用多核CPU来提升计算机的性能,但是多核CPU的核心数量是有限的,所以我们需要使用多个CPU来提升计算机的性能,这就是并行.
 
@@ -900,6 +900,7 @@ func main() {
 }
 ```
 在上面的例子中,只有worker开始工作之后,main函数才会输出worker work done,可以将channel当做信号量来使用.
+
 2.用于替代锁机制
 [示例代码](concurrency/channel/无缓冲替代锁)
 
@@ -909,10 +910,58 @@ func main() {
 
 有缓冲区的channel在发送和接收操作时,在缓冲区满了的情况下,发送操作会阻塞,在缓冲区为空的情况下,接收操作会阻塞.
 
+根据测试,有下面结论
+
+1. 无论是一对一收发还是多收多发,带缓冲channel的性能都要优于无缓冲的channel
+2. 对于带缓冲的channel而言,发送和接受的goroutine越多,性能越低
+
+区别于无缓冲channel的同步特性,有缓冲的channel具有异步asynchronous的特性.常用在下面两个场景中:
+
+**1.用作消息队列**(Message Queue)
+
+**2.用作计数信号量(counting semaphore)**
+
+带缓冲 channel 中的当前数据个数代表的是，当前同时处于活动状态（处理业务）的 Goroutine 的数量，而带缓冲 channel 的容量（capacity），就代表了允许同时处于活动状态的 Goroutine 的最大数量。
+
+向带缓冲 channel 的一个发送操作表示获取一个信号量，而从 channel 的一个接收操作则表示释放一个信号量。
+
+```go
+
+var active = make(chan struct{}, 3)
+var jobs = make(chan int, 10)
+
+func main() {
+    go func() {
+        for i := 0; i < 8; i++ {
+            jobs <- (i + 1)
+        }
+        close(jobs)
+    }()
+
+    var wg sync.WaitGroup
+
+    for j := range jobs {
+        wg.Add(1)
+        go func(j int) {
+            active <- struct{}{}
+            log.Printf("handle job: %d\n", j)
+            time.Sleep(2 * time.Second)
+            <-active
+            wg.Done()
+        }(j)
+    }
+    wg.Wait()
+}
+```
+
+
+
+
+
 
 
 **只发送和只接受类型的channel**
-```go
+```go 
 
 // produce 生产者 只发送数据
 func produce(ch chan<- int) {
@@ -955,7 +1004,63 @@ fmt.Println("程序运行结束")
 }
 ```
 在channel中,发送端负责关闭channel,接收端负责判断channel是否关闭
-#### select
+#### len(channel)
+
+len()方法支持的参数包括 array,slice,string,map和chan.
+
+#### nil channel
+
+var c chan int 就是一个nil channel
+
+对nil channel进行读写都会发生阻塞
+
+对一个关闭的channel进行读永远不会阻塞
+
+所以说当从一个通道读取完数据之后,将其关闭,下一个循环继续读取仍会读取到内容,且不会阻塞 ,为了避免这种情况的发生 需要将通道设置为nil
+
+```go
+func main() {
+    ch1, ch2 := make(chan int), make(chan int)
+    go func() {
+        time.Sleep(time.Second * 5)
+        ch1 <- 5
+        close(ch1)
+    }()
+
+    go func() {
+        time.Sleep(time.Second * 7)
+        ch2 <- 7
+        close(ch2)
+    }()
+
+    for {
+        select {
+        case x, ok := <-ch1:
+            if !ok {
+                ch1 = nil
+            } else {
+                fmt.Println(x)
+            }
+        case x, ok := <-ch2:
+            if !ok {
+                ch2 = nil
+            } else {
+                fmt.Println(x)
+            }
+        }
+        if ch1 == nil && ch2 == nil {
+            break
+        }
+    }
+    fmt.Println("program end")
+}
+```
+
+
+
+
+
+### select
 
 当涉及同时对多个channel进行操作的时候,我们会结合Go为CSP并发模型提供的另外一个原语select一起使用.
 
@@ -977,6 +1082,367 @@ default:             // 当上面case中的channel通信均无法实施时，执
 }
 ```
 当 select 语句中没有 default 分支，而且所有 case 中的 channel 操作都阻塞了的时候，整个 select 语句都将被阻塞，直到某一个 case 上的 channel 变成可发送，或者某个 case 上的 channel 变成可接收，select 语句才可以继续进行下去。
+
+#### 空default
+
+```go
+func sendTime(c interface{}, seq uintptr) {
+    // 无阻塞的向c发送当前时间
+    select {
+    case c.(chan Time) <- Now():
+    default:
+    }
+}
+```
+
+#### 超时机制
+
+```go
+
+func worker() {
+  select {
+  case <-c:
+       // ... do some stuff
+  case <-time.After(30 *time.Second):
+      return
+  }
+}
+```
+
+#### 心跳机制
+
+```go
+
+func worker() {
+  heartbeat := time.NewTicker(30 * time.Second)
+  defer heartbeat.Stop()
+  for {
+    select {
+    case <-c:
+      // ... do some stuff
+    case <- heartbeat.C:
+      //... do heartbeat stuff
+    }
+  }
+}
+```
+
+### 共享内存
+
+虽然Go语言提倡通过channel进行协程之间的通信(不要通过共享内存来通信,而是通过通信来共享内存),但是Go仍然通过标准库的sync包提供了对传统的,基于共享内存的并发模型的同步原语,包括了:
+
+* 互斥锁 sync.Mutex
+
+* 读写锁 sync.RWMutex
+
+* 条件变量 sync.Cond
+
+并通过atomic包提供原子操作原语等等.显然,给予共享内存的并发模型在Go中仍然具有用武之地.
+
+#### 用武之地
+
+**高性能的临界区(critical section)同步机制场景**
+
+> 临界区就是一个代码片段。但这个代码片段中有共享的数据，这些数据不支持多个goroutine的并发访问，只能通过像channel、锁等机制同步各个goroutine的访问。同一时间，只能有一个goroutine访问这段代码，修改或读取这段代码所共享的数据。
+
+channel 并发原语也可以用于对数据对象访问的同步，我们可以把 channel 看成是一种**高级**的同步原语，它自身的实现也是建构在低级同步原语之上的。也正因为如此，channel 自身的性能与低级同步原语相比要略微逊色，开销要更大。
+
+```bash
+(base) zane@ZaneMacBook-Pro benchmark % go test -bench=.
+goos: darwin
+goarch: arm64
+pkg: relearn/advanced/concurrency/sync/benchmark
+BenchmarkCriticalSectionSyncByMutex-8                   76807780                13.92 ns/op
+BenchmarkCriticalSectionSyncByMutexInParallel-8         10375921               114.5 ns/op
+BenchmarkCriticalSectionSyncByChan-8                    45109885                26.94 ns/op
+BenchmarkCriticalSectionSyncByChanInParallel-8          10269022               116.5 ns/op
+PASS
+ok      relearn/advanced/concurrency/sync/benchmark     5.495s
+
+```
+
+**不想转移结构体对象所有权,但又要保证结构体内部状态数据的同步访问的场景**
+
+基于channel的并发设计有一个特点:在goroutine间 通过channel转移数据对象的所有权.所以只有拥有数据对象所有权的goroutine才能对这个数据对象进行状态变更.
+
+如果你的设计中没有**转移结构体对象所有权**，但又要保证结构体内部状态数据在多个 Goroutine 之间同步访问，那么你可以使用 sync 包提供的低级同步原语来实现，比如最常用的sync.Mutex。
+
+#### 不可复制
+
+```go
+
+ func main() {
+     var wg sync.WaitGroup
+     i := 0
+     var mu sync.Mutex // 负责对i的同步访问
+ 
+     wg.Add(1)
+     // g1
+     go func(mu1 sync.Mutex) {
+         mu1.Lock()
+         i = 10
+         time.Sleep(10 * time.Second)
+         fmt.Printf("g1: i = %d\n", i)
+         mu1.Unlock()
+         wg.Done()
+     }(mu)
+ 
+     time.Sleep(time.Second)
+ 
+     mu.Lock()
+     i = 1
+     fmt.Printf("g0: i = %d\n", i)
+     mu.Unlock()
+ 
+     wg.Wait()
+ }
+```
+
+上述代码的预期运行结果是:
+
+```bash
+g1 = 10
+
+g0 = 1
+```
+
+然而实际的运行结果是
+
+```bash
+g0 = 1
+g1 = 1
+```
+
+在上述代码中,并没有在新创建的goroutine中对i进行加锁,因为函数中的互斥锁是拷贝来的.一旦 Mutex 类型变量被拷贝，原变量与副本就各自发挥作用，互相没有关联了.**甚至，如果拷贝的时机不对，比如在一个 mutex 处于 locked 的状态时对它进行了拷贝，就会对副本进行加锁操作，将导致加锁的 Goroutine 永远阻塞下去。**
+
+因此,在函数中应该进行地址传递而非拷贝传递.
+
+#### Mutex还是RWMutex
+
+sync包提供了两种用于临界区同步的原语:`Mutex`和`RWMutex`,他们俩都是零值可用的数据类型(不需要显式的初始化)
+
+> 复习
+>
+> Go中需要显式初始化的类型包括""
+>
+> array
+>
+> 需要用make进行初始化的类型(slice,map和chan)
+>
+> struct
+
+基本用法
+
+```go
+var mu sync.Mutex
+mu.Lock()
+// do something
+mu.Unlock()
+```
+
+一旦某个Goroutine A调用了Lock方法,他将成功持有这把锁.此时 如果有其他的Goroutine B执行Lock方法,就会阻塞在这里,直到A执行了Unlock()方法释放锁.
+
+互斥锁的两个原则
+
+1. **尽量减少在锁中的操作**.
+2. 一定需要调用Unlock()方法
+
+RWMutex是一个读写锁,与互斥锁用法大致相同,不多增加了读锁和写锁功能.
+
+```go
+
+var rwmu sync.RWMutex
+rwmu.RLock()   //加读锁
+readSomething()
+rwmu.RUnlock() //解读锁
+rwmu.Lock()    //加写锁
+changeSomething()
+rwmu.Unlock()  //解写锁
+```
+
+一旦某个Goroutine持有了写锁,那么其他的Goroutine将无法再继续加读锁或者加写锁操作,造成阻塞.
+
+但是某个Goroutine持有读锁,并不会影响其他的Goroutine加读锁,但是仍然会阻塞加写锁.
+
+通常,mutex是临时区同步原语的首选.读写锁适合应用在**具有一定并发量且读多写少的场合**。
+
+#### sync.Cond
+
+我们可以将一个条件变量理解为一个容器,这个容器中存放着一个或者一组等待某个条件成立的Goroutine.当条件成立之后,这些处于等待状态的Goroutine将得到通知,并被唤醒继续后续的任务.
+
+Cond是同步原语中的一种,如果没有条件变量,开发人员可能需要在Goroutine中通过连续轮询的方式检查某个条件是否为真(浪费资源),例如下面的例子:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+type signal struct {
+}
+
+var ready = false
+
+func worker(i int) {
+	fmt.Printf("worker %d: is working...\n", i)
+	time.Sleep(time.Second)
+	fmt.Printf("worker %d: is work done...\n", i)
+}
+
+func spawnGroup(f func(i int), num int, mu *sync.Mutex) <-chan signal {
+	// 生成一组工人开始工作 不过开始工作前需要不断的轮询查询是否可以开始工作
+	c := make(chan signal) // 无缓冲的channel 同步
+	var wg sync.WaitGroup
+
+	for i := 0; i < num; i++ {
+		wg.Add(1)
+		go func(workerIndex int) {
+			for {
+				// 创建一个for循环 不断的轮询是否可以开始工作
+				mu.Lock() // 尝试加锁
+				if !ready {
+					mu.Unlock()
+					time.Sleep(100 * time.Millisecond)
+					continue
+				}
+				mu.Unlock()
+				f(workerIndex)
+				wg.Done()
+				return
+			}
+		}(i + 1)
+	}
+
+	go func() {
+		// 打开一个协程用来判断是否全部已经工作完成
+		wg.Wait()
+		c <- signal{}
+	}()
+	return c
+
+}
+
+func main() {
+	fmt.Println(" start a group of workers...")
+
+	mu := &sync.Mutex{}
+	c := spawnGroup(worker, 5, mu)
+
+	time.Sleep(5 * time.Second)
+	fmt.Println("the group of worker start to work")
+
+	mu.Lock()
+	ready = true
+	mu.Unlock()
+
+	<-c
+	fmt.Println("all workers work done")
+
+}
+```
+
+上面的例子中,每个Goroutine通过轮询的方式来进行控制工人是否开始工作.
+
+但是我们可以使用Cond来控制条件变量,这种方式消耗更小,避免轮询的发生.
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+type signal struct {
+}
+
+var ready = false
+
+func worker(i int) {
+	fmt.Printf("worker %d: is working...\n", i)
+	time.Sleep(time.Second)
+	fmt.Printf("worker %d: is work done...\n", i)
+}
+
+func spawnGroup(f func(i int), num int, groupSignal *sync.Cond) <-chan signal {
+	// 生成一组工人开始工作 不过开始工作前需要不断的轮询查询是否可以开始工作
+	c := make(chan signal) // 无缓冲的channel 同步
+	var wg sync.WaitGroup
+
+	for i := 0; i < num; i++ {
+		wg.Add(1)
+		go func(workerIndex int) {
+			groupSignal.L.Lock()
+			for !ready {
+				groupSignal.Wait()
+			}
+			groupSignal.L.Unlock()
+			f(workerIndex)
+			wg.Done()
+			return
+		}(i + 1)
+	}
+
+	go func() {
+		// 打开一个协程用来判断是否全部已经工作完成
+		wg.Wait()
+		c <- signal{}
+	}()
+	return c
+
+}
+
+func main() {
+	fmt.Println(" start a group of workers...")
+
+	groupSignal := sync.NewCond(&sync.Mutex{}) // 为添加一个条件信号
+	
+	c := spawnGroup(worker, 5, groupSignal)
+
+	time.Sleep(5 * time.Second)
+	fmt.Println("the group of worker start to work")
+
+	groupSignal.L.Lock()
+	ready = true
+	groupSignal.Broadcast()
+	groupSignal.L.Unlock()
+
+	<-c
+	fmt.Println("all workers work done")
+}
+```
+
+上述代码最终的输出与之前相同,sync.Cond实例的初始化需要一个sync.Locker对象,一般使用Mutex来充当,条件变量需要这个互斥锁来同步临界区,保护用作条件的数据.
+
+加锁后，各个等待条件成立的 Goroutine 判断条件是否成立，如果不成立，则调用sync.Cond的 `Wait` 方法进入等待状态。Wait 方法在 Goroutine 挂起前会进行 Unlock 操作。
+
+当main Goroutine将保护的条件变量ready设置为true,并调用Broadcast方法之后,各个阻塞的Goroutine将被唤醒,并从wait方法中返回.
+
+面向 CSP 并发模型的 channel 原语和面向传统共享内存并发模型的 sync 包提供的原语，已经能够满足 Go 语言应用并发设计中 99.9% 的并发同步需求了。而剩余那 0.1% 的需求，我们可以使用 Go 标准库提供的 atomic 包来实现。
+
+#### 原子操作(atomic operation)
+
+原子操作是相对于普通指令操作而言的.
+
+原子操作是不可中断的,类似于一个事务,要么执行,要么不执行,一旦执行就需要执行完毕,中间不可分割.因此,原子操作也可以被用来共享数据的并发同步.
+
+原子操作由**底层硬件**直接提供支持，是一种硬件实现的指令级的“事务”，因此相对于操作系统层面和 Go 运行时层面提供的同步技术而言，它更为原始。
+
+atomic 原子操作的特性：随着并发量提升，使用 atomic 实现的共享变量的并发读写性能表现更为稳定，尤其是原子读操作，和 sync 包中的读写锁原语比起来，atomic 表现出了更好的伸缩性和高性能。
+
+
+
+
+
+
+
+
+
+
 
 
 
