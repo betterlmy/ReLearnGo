@@ -1,3 +1,3 @@
-module http-server
+module http
 
 go 1.20

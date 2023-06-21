@@ -1,0 +1,40 @@
+// 指定proto版本信息
+syntax = "proto3";
+
+// 指定生成的go文件存放位置及其包名
+option go_package = "./;pb";
+
+// 指定所在包的包名
+package pb;
+
+// 导入包,这么指定的导入方式，需要 protoc 命令在文件所在目录中执行编译操作
+import "manager.proto";
+
+// 定义商品类型的枚举消息体
+enum BrandType{
+  General = 0;
+  Standard = 1;
+}
+
+// 响应消息体
+message GetBrandInfoReq {
+  int64 brand_id = 1;
+}
+
+// 响应消息体
+message GetBrandInfoRsp {
+  int64 brand_id = 1;
+  string brand_name = 2;
+  repeated int64 brand_advList = 3;
+  Manager manager =4;
+  BrandType brand_type =5;
+}
+
+// 定义rpc服务
+service AdService{
+  // 获取商品信息接口
+  rpc GetBrandInfo(GetBrandInfoReq) returns (GetBrandInfoRsp);
+}
+
+
+
